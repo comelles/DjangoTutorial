@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import Profile
+from .forms import CustomUserCreationForm
 
 def profiles(request):
     profiles = Profile.objects.all()
@@ -18,6 +19,7 @@ def userProfile(request, pk):
     return render(request, 'users/user-profile.html', context)
 
 def loginUser(request):
+    page = 'login'
     if request.user.is_authenticated:
         return redirect('profiles')
     if request.method == 'POST':
@@ -38,6 +40,31 @@ def loginUser(request):
 
 def logoutUser(request):
     logout(request)
-    messages.error(request, 'User was logged out')
-
+    messages.info(request, 'User was logged out')
     return redirect('login')
+
+def registerUser(request):
+    page = 'register'
+    form =  CustomUserCreationForm()
+
+    if request.method == 'POST': 
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            #form.save() si no necesitamos toquetear nada
+            user = form.save(commit=False)   #Crea una instancia del objeto, antes de mandarlo a la bbdd
+            user.username = user.username.lower()
+            user.save()  
+            messages.success(request, 'User account was created')
+            login(request, user)
+            return redirect('profiles')
+        else:
+            messages.error(request, 'An error has ocurred during registration')
+
+
+    context = {'page': page, 'form': form}
+    
+
+    return render(request, 'users/login_register.html', context)
+
+def userAccount(request):
+    return render(request, 'users/account.html', context)
