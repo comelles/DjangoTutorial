@@ -1,4 +1,5 @@
 from importlib.metadata import requires
+import profile
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -27,28 +28,30 @@ def createProject(request):
             proj.owner = request.user.profile
             proj.save()
             
-            return redirect('projects') 
+            return redirect('account') 
     context = {'form' : form}
     return render(request, 'projects/project_form.html', context)
 
 @login_required(login_url='login')
 def updateProject(request, pk):                             #pasamos pk para identificar el proyecto
-    project = Project.objects.get(id=pk)
+    profile = request.user.profile
+    project = profile.project_set.get(id=pk)
     form = ProjectForm(instance=project)                    #instance para que modifique el el proyecto q queremos
     if request.method == 'POST':
         form = ProjectForm(request.POST,request.FILES, instance=project) #instance para que modifique el el proyecto q queremos
         if form.is_valid():
             form.save()
-            return redirect('projects') 
+            return redirect('account') 
     context = {'form' : form}
     return render(request, 'projects/project_form.html', context)
     
 @login_required(login_url='login')
 def deleteProject(request, pk):
-    project = Project.objects.get(id=pk)
+    profile = request.user.profile
+    project = profile.project_set.get(id=pk)
     if request.method == 'POST':
         project.delete()
-        return redirect('projects')
+        return redirect('account')
     context = {'object' : project}
-    return render(request, 'projects/delete_template.html', context)
+    return render(request, 'delete_template.html', context)
 

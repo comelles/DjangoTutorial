@@ -1,10 +1,11 @@
+import profile
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Profile
-from .forms import CustomUserCreationForm, ProfileForm
+from .models import Profile, Skill
+from .forms import CustomUserCreationForm, ProfileForm, SkillForm
 
 def profiles(request):
     profiles = Profile.objects.all()
@@ -85,3 +86,46 @@ def editAccount(request):
             return redirect('account')
     context = {'form' : form}
     return render(request, 'users/profile_form.html', context)
+
+@login_required(login_url='login')
+def createSkill(request):
+    profile = request.user.profile
+    form = SkillForm()
+    if request.method == 'POST':
+        form = SkillForm(request.POST)
+        if form.is_valid():
+            skill = form.save(commit = False)
+            skill.owner = profile
+            skill.save()
+            messages.success(request, 'Skill was added Succesfully!')
+
+            return redirect('account')
+    context = {'form' : form}
+    return render(request, 'users/skill_form.html', context)
+
+
+@login_required(login_url='login')
+def updateSkill(request, pk):
+    profile = request.user.profile
+    skill = profile.skill_set.get(id = pk)
+    form = SkillForm(instance = skill)
+    if request.method == 'POST':
+        form = SkillForm(request.POST, instance = skill)
+        if form.is_valid():
+            form.save()   #no hace falta lo demas xq ya tenemos el dueño en la instancia
+            messages.success(request, 'Skill was updated Succesfully!')
+
+            return redirect('account')
+    context = {'form' : form}
+    return render(request, 'users/skill_form.html', context)
+
+def deleteSkill(request, pk):
+    profile = request.user.profile
+    skill = profile.skill_set.get(id=pk)
+    if request.method == 'POST':
+        skill.delete()
+        messages.success(request, 'Skill was deleted Succesfully!')
+
+        return redirect('account')
+    context = {'object': skill}            #object y no skill porque el delete template no es solo para skills
+    return render(request, 'delete_template.html', context)
