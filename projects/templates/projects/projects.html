@@ -10,7 +10,7 @@
         </div>
 
         <div class="hero-section__search">
-          <form class="form" action="{% url 'projects' %}" method="get">
+          <form id='searchForm' class="form" action="{% url 'projects' %}" method="get">
             <div class="form__field">
               <label for="formInput#search">Search By Projects </label>
               <input class="input input--text" id="formInput#search" type="text" name="search_query"
@@ -55,7 +55,7 @@
         </div>
       </div>
     </section>
-
+    {% include 'pagination.html' with query_set=projects custom_range=custom_range%} <!-- Le asignamos projects a query_set para usar query_set en el template de paginacion y que sea multiuso.-->
     
   </main>
 

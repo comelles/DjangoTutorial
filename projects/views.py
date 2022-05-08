@@ -1,20 +1,24 @@
 from importlib.metadata import requires
 import profile
+from turtle import left
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
-
 from users.utils import searchProfiles
 from .models import Project, Tag
 from .forms import ProjectForm
-from .utils import searchProjects
-
+from .utils import searchProjects, paginationProjects
+ 
 
 
 def projects(request):
     projects, search_query = searchProjects(request)
-    context = {'projects': projects, 'search_query':search_query}
+    custom_range, projects = paginationProjects(request, projects, 6)
+    
+
+
+    context = {'projects': projects, 'search_query':search_query, 'custom_range':custom_range}
     return render(request, 'projects/projects.html', context)
 
 
